@@ -1,0 +1,176 @@
+{
+  "users": [
+    {
+      "id": "usr_admin_01",
+      "name": "Platform Administrator",
+      "email": "admin@hdfc.com",
+      "password": "password123",
+      "role": "admin"
+    },
+    {
+      "id": "usr_payer_01",
+      "name": "Apollo Hospitals",
+      "email": "apollo@payer.com",
+      "password": "password123",
+      "role": "payer"
+    },
+    {
+      "id": "usr_payer_02",
+      "name": "Star Health",
+      "email": "star@payer.com",
+      "password": "password123",
+      "role": "payer"
+    },
+    {
+      "id": "usr_payee_01",
+      "name": "OxygenTanks",
+      "email": "classic@payee.com",
+      "password": "password123",
+      "role": "payee",
+      "hasAcceptedTerms": true,
+      "businessName": "OxygenTanks",
+      "category": "Healthcare"
+    },
+    {
+      "id": "usr_payee_02",
+      "name": "Fresh Clinic",
+      "email": "new@payee.com",
+      "password": "password123",
+      "role": "payee",
+      "hasAcceptedTerms": false,
+      "businessName": "Fresh Clinic",
+      "category": "Healthcare"
+    },
+    {
+      "id": "usr_payee_03",
+      "name": "Ryze Insurance",
+      "email": "vanilla@payee.com",
+      "password": "password123",
+      "role": "payee",
+      "hasAcceptedTerms": false,
+      "businessName": "RyzenInsurance",
+      "category": "Insurance"
+    }
+  ],
+  "programs": [
+    {
+      "id": "prog_apollo_01",
+      "name": "Apollo Corporate Care",
+      "payerId": "usr_payer_01",
+      "status": "Active",
+      "category": "Healthcare",
+      "createdAt": "Mar 1, 2026",
+      "createdBy": "Apollo Hospitals",
+      "payoutsReceived": 15,
+      "enrolledPayees": ["usr_payee_01", "usr_payee_02"]
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif_001",
+      "userId": "usr_payee_01",
+      "title": "payout Approved",
+      "message": "Your payout for Claim No. VADE0B112233 has been approved and is ready to redeem.",
+      "read": false,
+      "date": "2026-03-10T10:00:00Z"
+    }
+  ],
+  "payouts": [
+    {
+      "id": "clm_settled_01",
+      "userId": "usr_payee_01",
+      "programId": "prog_apollo_01",
+      "date": "Mar 5, 2026",
+      "providerName": "OxygenTanks",
+      "patientName": "John Doe",
+      "claimNo": "VADE0B554433",
+      "payoutId": "ACME99887766",
+      "amount": "12,500",
+      "status": "Settled"
+    },
+    {
+      "id": "clm_settled_02",
+      "userId": "usr_payee_01",
+      "programId": "prog_apollo_01",
+      "date": "Mar 4, 2026",
+      "providerName": "OxygenTanks",
+      "patientName": "Jane Smith",
+      "claimNo": "VADE0B667788",
+      "payoutId": "ACME11223344",
+      "amount": "8,200",
+      "status": "Settled"
+    },
+    {
+      "id": "clm_redeemed_01",
+      "userId": "usr_payee_01",
+      "programId": "prog_apollo_01",
+      "date": "Mar 8, 2026",
+      "providerName": "OxygenTanks",
+      "patientName": "Robert Wilson",
+      "claimNo": "VADE0B990011",
+      "payoutId": "ACME55667788",
+      "amount": "15,000",
+      "status": "Redeemed"
+    },
+    {
+      "id": "clm_redeemed_02",
+      "userId": "usr_payee_01",
+      "programId": "prog_apollo_01",
+      "date": "Mar 7, 2026",
+      "providerName": "OxygenTanks",
+      "patientName": "Mary Johnson",
+      "claimNo": "VADE0B223344",
+      "payoutId": "ACME44332211",
+      "amount": "4,500",
+      "status": "Redeemed"
+    },
+    {
+      "id": "clm_ready_01",
+      "userId": "usr_payee_01",
+      "programId": "prog_apollo_01",
+      "date": "Mar 10, 2026",
+      "providerName": "OxygenTanks",
+      "patientName": "Alice Brown",
+      "claimNo": "VADE0B112233",
+      "payoutId": "ACME88776655",
+      "amount": "22,000",
+      "status": "Ready to redeem"
+    },
+    {
+      "id": "clm_ready_02",
+      "userId": "usr_payee_01",
+      "programId": "prog_apollo_01",
+      "date": "Mar 9, 2026",
+      "providerName": "OxygenTanks",
+      "patientName": "Charlie Davis",
+      "claimNo": "VADE0B334455",
+      "payoutId": "ACME22110099",
+      "amount": "18,750",
+      "status": "Ready to redeem"
+    },
+    {
+      "id": "clm_pending_01",
+      "userId": "usr_payee_01",
+      "programId": "prog_apollo_01",
+      "date": "Mar 10, 2026",
+      "providerName": "OxygenTanks",
+      "patientName": "David Miller",
+      "claimNo": "VADE0B778899",
+      "payoutId": "ACME00998877",
+      "amount": "55,000",
+      "status": "Pending"
+    },
+    {
+      "id": "clm_pending_02",
+      "userId": "usr_payee_01",
+      "programId": "prog_apollo_01",
+      "date": "Mar 10, 2026",
+      "providerName": "OxygenTanks",
+      "patientName": "Eve Wilson",
+      "claimNo": "VADE0B001122",
+      "payoutId": "ACME33445566",
+      "amount": "62,300",
+      "status": "Pending"
+    }
+  ]
+}

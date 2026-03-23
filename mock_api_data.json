@@ -1,0 +1,159 @@
+{
+  "dashboard": {
+    "metrics": {
+      "totalPayout": 1245000,
+      "totalCardsGenerated": 248,
+      "totalCardsRedeemed": 186,
+      "activePayee": 45
+    },
+    "recentPayouts": [
+      {
+        "id": "VADE0B248932",
+        "payee": "Fortis Hospital",
+        "category": "Healthcare",
+        "amount": 10000,
+        "status": "Ready to Redeem",
+        "createdRelative": "10 Minutes ago",
+        "createdAt": "2024-03-07T09:00:00Z"
+      },
+      {
+        "id": "VADE0B248978",
+        "payee": "Apollo Hospital",
+        "category": "Healthcare",
+        "amount": 120000,
+        "status": "Redeemed",
+        "createdRelative": "40 Minutes ago",
+        "createdAt": "2024-03-07T08:30:00Z"
+      },
+      {
+        "id": "VADE0B248995",
+        "payee": "Max Hospital",
+        "category": "Healthcare",
+        "amount": 85000,
+        "status": "Redeemed",
+        "createdRelative": "1 Hour ago",
+        "createdAt": "2024-03-07T08:00:00Z"
+      },
+      {
+        "id": "VADE0B248985",
+        "payee": "Gamma Health",
+        "category": "Healthcare",
+        "amount": 88110,
+        "status": "Redeemed",
+        "createdRelative": "6 Hours ago",
+        "createdAt": "2024-03-07T03:00:00Z"
+      },
+      {
+        "id": "VADE0B248944",
+        "payee": "Alfa Healthcare",
+        "category": "Medical Program",
+        "amount": 62752,
+        "status": "Redeemed",
+        "createdRelative": "8 Hours ago",
+        "createdAt": "2024-03-07T01:00:00Z"
+      },
+      {
+        "id": "VADE0B248945",
+        "payee": "Ceta Healthcare",
+        "category": "Medical Program",
+        "amount": 52347,
+        "status": "Redeemed",
+        "createdRelative": "24 Hours ago",
+        "createdAt": "2024-03-06T09:00:00Z"
+      }
+    ]
+  },
+  "programs": [
+    {
+      "id": "PRG-1001",
+      "name": "Acme Employee Wellness",
+      "businessType": "Corporate",
+      "category": "Healthcare",
+      "status": "Active",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "settings": {
+        "deduction": "Full Face Value",
+        "allowMultipleCards": false,
+        "requirePhysicalVerification": true
+      },
+      "metrics": {
+        "budgetLimit": 5000000,
+        "disbursed": 1245000,
+        "enrolledPayees": 45
+      }
+    },
+    {
+      "id": "PRG-1002",
+      "name": "Beta LLC Supply Transport",
+      "businessType": "Logistics",
+      "category": "Transport",
+      "status": "Active",
+      "createdAt": "2024-02-10T14:30:00Z",
+      "settings": {
+        "deduction": "Per Use Value",
+        "allowMultipleCards": true,
+        "requirePhysicalVerification": false
+      },
+      "metrics": {
+        "budgetLimit": 2000000,
+        "disbursed": 850000,
+        "enrolledPayees": 120
+      }
+    },
+    {
+      "id": "PRG-1003",
+      "name": "Gamma Corp Software Licenses",
+      "businessType": "Technology",
+      "category": "Software",
+      "status": "Draft",
+      "createdAt": "2024-03-01T09:15:00Z",
+      "settings": {
+        "deduction": "Full Face Value",
+        "allowMultipleCards": true,
+        "requirePhysicalVerification": false
+      },
+      "metrics": {
+        "budgetLimit": 1500000,
+        "disbursed": 0,
+        "enrolledPayees": 0
+      }
+    }
+  ],
+  "payees": [
+    {
+      "id": "PAYEE-01",
+      "name": "Apollo Hospitals",
+      "programsEnrolled": ["PRG-1001"],
+      "totalTransactions": 14,
+      "status": "Verified"
+    },
+    {
+      "id": "PAYEE-02",
+      "name": "Fortis Healthcare",
+      "programsEnrolled": ["PRG-1001"],
+      "totalTransactions": 8,
+      "status": "Verified"
+    },
+    {
+      "id": "PAYEE-03",
+      "name": "Max Healthcare",
+      "programsEnrolled": ["PRG-1001"],
+      "totalTransactions": 21,
+      "status": "Verified"
+    },
+    {
+      "id": "PAYEE-04",
+      "name": "Manipal Hospitals",
+      "programsEnrolled": ["PRG-1001"],
+      "totalTransactions": 0,
+      "status": "Pending"
+    },
+    {
+      "id": "PAYEE-05",
+      "name": "Global Transport Union",
+      "programsEnrolled": ["PRG-1002"],
+      "totalTransactions": 42,
+      "status": "Verified"
+    }
+  ]
+}
