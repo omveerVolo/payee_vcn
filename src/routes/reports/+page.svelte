@@ -11,6 +11,8 @@
   import { authState } from "$lib/state/auth.svelte.js";
   import { dbStore, requestReport, apiCall } from "$lib/state/db.svelte.js";
 
+  const currentTheme = $derived(authState.theme);
+
   let activeUser = $derived(
     authState.isAdminView ? authState.viewingAs : authState.user
   );
@@ -140,7 +142,7 @@
       <div
         class="border-b border-slate-200 bg-[#f8f9fa] px-6 py-5 flex items-center justify-between"
       >
-        <h2 class="text-[17px] font-semibold text-[#003366]">Reports</h2>
+        <h2 class="text-[17px] font-semibold text-slate-900">Reports</h2>
       </div>
 
       <div class="px-6 pb-6 w-full">
@@ -156,8 +158,9 @@
                 }}
                 class="rounded-md px-8 py-2 text-sm font-semibold transition-all {activeTab ===
                 'Program'
-                  ? 'bg-white text-[#0066cc] shadow-sm ring-1 ring-slate-200 cursor-default'
+                  ? 'bg-white shadow-sm ring-1 ring-slate-200 cursor-default'
                   : 'text-slate-500 hover:text-slate-700 cursor-pointer'}"
+                style="color: {activeTab === 'Program' ? currentTheme.colors.primary : ''}"
               >
                 Program
               </button>
@@ -168,8 +171,9 @@
                 }}
                 class="rounded-md px-8 py-2 text-sm font-semibold transition-all {activeTab ===
                 'Entity'
-                  ? 'bg-white text-[#0066cc] shadow-sm ring-1 ring-slate-200 cursor-default'
+                  ? 'bg-white shadow-sm ring-1 ring-slate-200 cursor-default'
                   : 'text-slate-500 hover:text-slate-700 cursor-pointer'}"
+                style="color: {activeTab === 'Entity' ? currentTheme.colors.primary : ''}"
               >
                 {entityTabName}
               </button>
@@ -205,7 +209,9 @@
                         bind:value={customStartDate}
                         title="Start Date"
                         aria-label="Start Date"
-                        class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-700 outline-none focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc] cursor-pointer bg-slate-50 hover:bg-white transition-colors"
+                        class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-700 outline-none cursor-pointer bg-slate-50 hover:bg-white transition-colors"
+                        onfocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = currentTheme.colors.primary; (e.currentTarget as HTMLElement).style.boxShadow = `0 0 0 1px ${currentTheme.colors.primary}`; }}
+                        onblur={(e) => { (e.currentTarget as HTMLElement).style.borderColor = ''; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}
                       />
                     </div>
                     <div class="flex flex-col gap-1.5">
@@ -239,7 +245,10 @@
             <button
               onclick={handleGenerateReport}
               disabled={isRequesting}
-              class="flex h-11 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#0052a3] cursor-pointer hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
+              class="flex h-11 items-center justify-center gap-2 rounded-xl border border-transparent px-5 text-sm font-semibold text-white shadow-md transition-all cursor-pointer hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
+              style="background-color: {currentTheme.colors.primary}"
+              onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(0.9)'; }}
+              onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
             >
               {#if isRequesting}
                 <RefreshCw class="h-4 w-4 animate-spin" />
@@ -295,7 +304,8 @@
                 <input
                   type="checkbox"
                   checked={selectedTargetIds.includes("all")}
-                  class="h-5 w-5 rounded border-slate-300 accent-[#0066cc] cursor-pointer"
+                  class="h-5 w-5 rounded border-slate-300 cursor-pointer"
+                  style="accent-color: {currentTheme.colors.primary}"
                   onchange={() => toggleSelection("all")}
                   onclick={(e) => e.stopPropagation()}
                 />
@@ -311,7 +321,7 @@
                 role="button"
               >
                 <div
-                  class="col-span-3 text-sm font-semibold text-[#003366] mt-1"
+                  class="col-span-3 text-sm font-semibold text-slate-800 mt-1"
                 >
                   {item.businessName || item.name}
                 </div>
@@ -398,7 +408,7 @@
                 class="mt-2 flex items-center justify-between border-t border-slate-100 pt-3"
               >
                 {#if report.status === "loading"}
-                  <div class="flex items-center gap-2 text-[#0066cc]">
+                  <div class="flex items-center gap-2" style="color: {currentTheme.colors.primary}">
                     <RefreshCw class="h-4 w-4 animate-spin" />
                     <span class="text-xs font-semibold">Generating...</span>
                   </div>

@@ -8,6 +8,7 @@
   import { authState } from "$lib/state/auth.svelte.js";
 
   const dispatch = createEventDispatcher();
+  const currentTheme = $derived(authState.theme);
 
   // Contextual resolver
   let activeUser = $derived(
@@ -583,13 +584,17 @@
             <!-- Single Payout Card -->
             <button
               onclick={() => (journey = "single")}
-              class="group flex flex-col items-start p-8 rounded-3xl border-2 border-slate-100 bg-white hover:border-[#6a32fc] hover:shadow-lg transition-all text-left cursor-pointer relative overflow-hidden"
+              class="group flex flex-col items-start p-8 rounded-3xl border-2 border-slate-100 bg-white hover:shadow-lg transition-all text-left cursor-pointer relative overflow-hidden"
+              onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = currentTheme.colors.navActiveBorder; }}
+              onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = ''; }}
             >
               <div
-                class="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-indigo-50/50 group-hover:bg-[#6a32fc]/5 transition-colors"
+                class="absolute -right-12 -top-12 h-40 w-40 rounded-full transition-colors"
+                style="background-color: {currentTheme.colors.navActiveBg}08"
               ></div>
               <div
-                class="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-[#6a32fc] mb-6 group-hover:scale-110 transition-transform"
+                class="flex h-14 w-14 items-center justify-center rounded-2xl mb-6 group-hover:scale-110 transition-transform"
+                style="background-color: {currentTheme.colors.primary}10; color: {currentTheme.colors.primary}"
               >
                 <User class="h-7 w-7" />
               </div>
@@ -606,13 +611,17 @@
             <!-- Bulk Upload Card -->
             <button
               onclick={() => (journey = "bulk")}
-              class="group flex flex-col items-start p-8 rounded-3xl border-2 border-slate-100 bg-white hover:border-[#7d326f] hover:shadow-lg transition-all text-left cursor-pointer relative overflow-hidden"
+              class="group flex flex-col items-start p-8 rounded-3xl border-2 border-slate-100 bg-white hover:shadow-lg transition-all text-left cursor-pointer relative overflow-hidden"
+              onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = currentTheme.colors.navActiveBorder; }}
+              onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = ''; }}
             >
               <div
-                class="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[#7d326f]/10/50 group-hover:bg-[#7d326f]/5 transition-colors"
+                class="absolute -right-12 -top-12 h-40 w-40 rounded-full transition-colors"
+                style="background-color: {currentTheme.colors.navActiveBg}08"
               ></div>
               <div
-                class="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#7d326f]/10 text-[#7d326f] mb-6 group-hover:scale-110 transition-transform"
+                class="flex h-14 w-14 items-center justify-center rounded-2xl mb-6 group-hover:scale-110 transition-transform"
+                style="background-color: {currentTheme.colors.primary}10; color: {currentTheme.colors.primary}"
               >
                 <FileUp class="h-7 w-7" />
               </div>
@@ -631,7 +640,8 @@
         <div class="mt-8 flex w-full">
           <!-- Virtual Card Node (Widened to w-96 from w-80, ratio maintained) -->
           <div
-            class="flex h-60 w-96 flex-col justify-between rounded-3xl bg-[#7d326f] bg-gradient-to-br from-[#8a42fc] to-[#4a22dc] p-8 shadow-lg relative ring-2 ring-offset-2 ring-transparent"
+            class="flex h-60 w-96 flex-col justify-between rounded-3xl p-8 shadow-lg relative ring-2 ring-offset-2 ring-transparent"
+            style="background-color: {currentTheme.colors.primary}; background-image: linear-gradient(to bottom right, {currentTheme.colors.primary}, {currentTheme.colors.sidebarBg})"
           >
             <div class="flex justify-between w-full text-white/90">
               <span class="text-sm font-medium">Virtual card</span>
@@ -729,7 +739,9 @@
                         showDateDropdown = !showDateDropdown;
                     }}
                     disabled={csvData.length > 0}
-                    class="relative flex h-12 w-full items-center justify-between rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-[13px] font-semibold text-slate-700 outline-none hover:border-slate-300 focus:border-[#7d326f] focus:ring-1 focus:ring-[#7d326f] transition-all disabled:opacity-50 disabled:bg-slate-50 disabled:cursor-not-allowed disabled:hover:border-slate-200"
+                    class="relative flex h-12 w-full items-center justify-between rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-[13px] font-semibold text-slate-700 outline-none hover:border-slate-300 transition-all disabled:opacity-50 disabled:bg-slate-50 disabled:cursor-not-allowed disabled:hover:border-slate-200"
+                    onfocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = currentTheme.colors.primary; (e.currentTarget as HTMLElement).style.boxShadow = `0 0 0 1px ${currentTheme.colors.primary}`; }}
+                    onblur={(e) => { (e.currentTarget as HTMLElement).style.borderColor = ''; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}
                   >
                     <Calendar
                       class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-800"
@@ -761,10 +773,10 @@
                       {#each validityOptions as opt}
                         <button
                           type="button"
-                          class="flex w-full items-center px-4 py-2.5 text-sm font-medium transition-colors hover:bg-slate-50 hover:text-[#7d326f] {selectedDateRange ===
-                          opt
-                            ? 'bg-[#7d326f]/5 text-[#7d326f]'
-                            : 'text-slate-600'}"
+                          class="flex w-full items-center px-4 py-2.5 text-sm font-medium transition-colors hover:bg-slate-50"
+                          style="color: {selectedDateRange === opt ? currentTheme.colors.primary : 'rgb(71, 85, 105)'}; background-color: {selectedDateRange === opt ? currentTheme.colors.primary + '08' : 'transparent'}"
+                          onmouseenter={(e) => { if (selectedDateRange !== opt) (e.currentTarget as HTMLElement).style.color = currentTheme.colors.primary; }}
+                          onmouseleave={(e) => { if (selectedDateRange !== opt) (e.currentTarget as HTMLElement).style.color = 'rgb(71, 85, 105)'; }}
                           onclick={() => {
                             selectedDateRange = opt;
                             showDateDropdown = false;
@@ -1342,7 +1354,8 @@
                       >
                         <div class="flex items-center gap-4">
                           <div
-                            class="flex h-10 w-10 items-center justify-center rounded-lg bg-[#7d326f]/20 text-[#7d326f]"
+                            class="flex h-10 w-10 items-center justify-center rounded-lg"
+                            style="background-color: {currentTheme.colors.primary}20; color: {currentTheme.colors.primary}"
                           >
                             <FileUp class="h-5 w-5" />
                           </div>
@@ -1548,7 +1561,10 @@
                               handleSubmit();
                             }}
                             disabled={mismatchedRows.length > 0}
-                            class="rounded-xl bg-[#7d326f] px-8 py-3.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#68295c] active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#7d326f] disabled:active:scale-100"
+                            class="rounded-xl px-8 py-3.5 text-sm font-semibold text-white shadow-md transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+                            style="background-color: {currentTheme.colors.primary}"
+                            onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(0.9)'; }}
+                            onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
                           >
                             Submit Payouts
                           </button>
@@ -1644,7 +1660,8 @@
                   >CSV Payouts</span
                 >
                 <span
-                  class="text-xs font-medium bg-[#7d326f]/10 text-[#7d326f] px-2 py-1 rounded-md"
+                  class="text-xs font-medium px-2 py-1 rounded-md"
+                  style="background-color: {currentTheme.colors.primary}10; color: {currentTheme.colors.primary}"
                   >{csvData.length} records</span
                 >
               </div>
@@ -1664,7 +1681,7 @@
                           >{row.email}</span
                         >
                       </div>
-                      <span class="font-bold text-[#7d326f] text-sm"
+                      <span class="font-bold text-sm" style="color: {currentTheme.colors.primary}"
                         >{row.currency === "INR" ? "₹" : row.currency}
                         {row.amount}</span
                       >
@@ -1756,7 +1773,10 @@
         <div class="mt-6 shrink-0 pt-2 bg-white sticky bottom-0">
           <button
             onclick={handleSubmit}
-            class="w-full rounded-2xl bg-[#7d326f] py-4 text-[15px] font-semibold text-white shadow-md transition-all hover:bg-[#68295c] active:scale-[0.98] cursor-pointer"
+            class="w-full rounded-2xl py-4 text-[15px] font-semibold text-white shadow-md transition-all active:scale-[0.98] cursor-pointer"
+            style="background-color: {currentTheme.colors.primary}"
+            onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(0.9)'; }}
+            onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
           >
             Submit
           </button>
@@ -1832,7 +1852,7 @@
                         >
                       {/if}
                     </div>
-                    <span class="text-md font-bold text-[#7d326f]"
+                    <span class="text-md font-bold" style="color: {currentTheme.colors.primary}"
                       >{row.currency === "INR" ? "₹" : row.currency}
                       {row.amount}</span
                     >
@@ -1870,7 +1890,10 @@
 
         <button
           onclick={handleFinish}
-          class="mt-6 w-full rounded-xl bg-[#7d326f] py-3.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#68295c] active:scale-[0.98] cursor-pointer"
+          class="mt-6 w-full rounded-xl py-3.5 text-sm font-semibold text-white shadow-md transition-all active:scale-[0.98] cursor-pointer"
+          style="background-color: {currentTheme.colors.primary}"
+          onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(0.9)'; }}
+          onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
         >
           Done
         </button>

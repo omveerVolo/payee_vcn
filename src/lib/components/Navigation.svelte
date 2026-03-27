@@ -2,24 +2,15 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { authState, logout, stopViewing } from "$lib/state/auth.svelte.js";
-  import { ShieldAlert } from "lucide-svelte";
   import {
-    Home,
-    CreditCard,
-    FileText,
-    Grid,
-    Settings,
-    User,
-    LogOut,
-    Menu,
     ArrowUpRight,
-    X
-  } from "@lucide/svelte";
+    Menu,
+  } from "lucide-svelte";
 
   let isMobileMenuOpen = $state(false);
   let isSettingsOpen = $state(false);
   let isPayoutsOpen = $state(false);
-  let hoverStates = $state({ payouts: false, profile: false });
+  let hoverStates = $state<Record<string, boolean>>({});
 
   function toggleMobileMenu() {
     isMobileMenuOpen = !isMobileMenuOpen;
@@ -29,7 +20,7 @@
     isMobileMenuOpen = false;
   }
 
-  function handleNavClick(e: MouseEvent, path: string) {
+  function handleNavClick(e: MouseEvent, path: string, id?: string) {
     if (path === "/logout") {
       e.preventDefault();
       logout();
@@ -38,59 +29,27 @@
       e.preventDefault();
       stopViewing();
       goto("/");
+    } else if (path === "#") {
+      e.preventDefault();
     }
     closeMobileMenu();
   }
 
-  const mainNav = [
-    {
-      label: "Home",
-      path: "/",
-      icon: Home
-    },
-    {
-      label: "Payouts",
-      path: "/payouts",
-      icon: CreditCard
-    },
-    {
-      label: "Reports",
-      path: "/reports",
-      icon: FileText
-    },
-    {
-      label: "Programs",
-      path: "/programs",
-      icon: Grid
-    }
-  ];
-
-  const bottomNav = [
-    {
-      id: "settings",
-      path: "#",
-      icon: Settings
-    },
-    {
-      path: "/account",
-      icon: User
-    },
-    {
-      path: "/logout",
-      icon: LogOut
-    }
-  ];
+  const currentTheme = $derived(authState.theme);
+  const mainNav = $derived(currentTheme.navigation.main);
+  const bottomNav = $derived(currentTheme.navigation.bottom);
 </script>
 
 <!-- Mobile Top Bar -->
 <div
-  class="md:hidden fixed top-0 left-0 w-full h-16 bg-[#1f1747] border-b border-[#1a133b] z-40 flex items-center justify-between px-4 text-white shadow-md"
+  class="md:hidden fixed top-0 left-0 w-full h-16 z-40 flex items-center justify-between px-4 text-white shadow-md transition-colors duration-300"
+  style="background-color: {currentTheme.colors.sidebarBg}; border-bottom: 1px solid {currentTheme.colors.sidebarBorder};"
 >
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <img
     src="/logo.png"
-    alt="HDFC Bank Logo"
+    alt="Logo"
     class="h-12 w-auto object-contain cursor-pointer"
     onclick={() => {
       if (authState.isAdminView) {
@@ -121,9 +80,10 @@
 {/if}
 
 <nav
-  class="fixed top-0 left-0 z-50 flex h-screen w-28 flex-col items-center justify-between bg-[#1f1747] border-r border-[#1a133b] py-4 text-white shadow-xl transition-transform duration-300 ease-in-out md:translate-x-0 {isMobileMenuOpen
+  class="fixed top-0 left-0 z-50 flex h-screen w-28 flex-col items-center justify-between py-4 text-white shadow-xl transition-all duration-300 ease-in-out md:translate-x-0 {isMobileMenuOpen
     ? 'translate-x-0'
     : '-translate-x-full'}"
+  style="background-color: {currentTheme.colors.sidebarBg}; border-right: 1px solid {currentTheme.colors.sidebarBorder};"
 >
   <div class="flex w-full flex-col items-center">
     <!-- Logo -->
@@ -142,7 +102,7 @@
     >
       <img
         src="/logo.png"
-        alt="HDFC Bank Logo"
+        alt="Logo"
         class="h-36 w-auto object-contain"
       />
     </div>
@@ -158,45 +118,53 @@
           authState.user?.role?.toLowerCase() === "admin" &&
           (item.label === "Programs" || item.label === "Reports")}
         {@const Icon = item.icon}
+        {@const isActive = $page.url.pathname === item.path || (item.path !== '/' && $page.url.pathname.startsWith(item.path))}
+        
         <li
           class="relative flex w-full justify-center group {isAdminDisabled
             ? 'opacity-40 cursor-not-allowed'
             : ''}"
-          onmouseenter={() => {
-            if (item.path === "/payouts") hoverStates.payouts = true;
-          }}
-          onmouseleave={() => {
-            if (item.path === "/payouts") hoverStates.payouts = false;
-          }}
+          onmouseenter={() => { if (item.children) hoverStates[item.label] = true; }}
+          onmouseleave={() => { if (item.children) hoverStates[item.label] = false; }}
         >
           <a
-            href={item.path === "/payouts" && (authState.isAdminView ? authState.viewingAs?.role : authState.user?.role) === "payer" ? "/create-payout" : item.path}
+            href={item.path}
             onclick={(e) => {
               if (isAdminDisabled) {
                 e.preventDefault();
                 return;
               }
-              if (item.path === "/payouts") {
-                if ((authState.isAdminView ? authState.viewingAs?.role : authState.user?.role) === "payer") {
-                  hoverStates.payouts = false;
-                  handleNavClick(e, "/create-payout");
-                  return;
-                }
+              if (item.children) {
                 e.preventDefault();
-                isPayoutsOpen = !isPayoutsOpen;
-                isSettingsOpen = false; // Close others
+                // Toggle logic if needed, but currently hover based
               } else {
                 handleNavClick(e, item.path);
               }
             }}
             class="group flex flex-col items-center justify-center w-[68px] h-[68px] rounded-2xl border-2 transition-all duration-200
-              {$page.url.pathname === item.path ||
-            (item.path === '/payouts' &&
-              $page.url.pathname.startsWith('/payouts'))
-              ? 'border-[#6e56cf] bg-[#2b2166] text-white shadow-sm'
-              : 'border-transparent text-slate-400 hover:border-[#6e56cf]/60 hover:bg-[#2b2166]/50 hover:text-white'} {isAdminDisabled
-              ? 'pointer-events-none'
-              : ''}"
+              {isActive
+                ? 'text-white shadow-sm'
+                : 'border-transparent text-slate-400 hover:text-white'} {isAdminDisabled
+                ? 'pointer-events-none'
+                : ''}"
+            style="
+              background-color: {isActive ? currentTheme.colors.navActiveBg : 'transparent'};
+              border-color: {isActive ? currentTheme.colors.navActiveBorder : 'transparent'};
+            "
+            onmouseenter={(e) => {
+              if (!isActive) {
+                const target = e.currentTarget as HTMLElement;
+                target.style.backgroundColor = currentTheme.colors.navHoverBg;
+                target.style.borderColor = currentTheme.colors.navHoverBorder;
+              }
+            }}
+            onmouseleave={(e) => {
+              if (!isActive) {
+                const target = e.currentTarget as HTMLElement;
+                target.style.backgroundColor = 'transparent';
+                target.style.borderColor = 'transparent';
+              }
+            }}
           >
             <span
               class="mb-1.5 flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
@@ -211,95 +179,39 @@
             </span>
           </a>
 
-          <!-- Payouts Submenu Overlay (Payee Only or Admin Impersonating Payee) -->
-          {#if item.path === "/payouts" && (authState.isAdminView ? authState.viewingAs?.role : authState.user?.role) === "payee"}
+          <!-- Submenu Overlay Wrapper (The "Bridge") -->
+          {#if item.children && hoverStates[item.label]}
             <div
-              class="absolute left-full ml-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-xl w-56 z-50 flex flex-col pointer-events-auto border border-slate-100 overflow-visible transition-all duration-200 {hoverStates.payouts
-                ? 'opacity-100 visible'
-                : 'opacity-0 invisible'}"
+              class="absolute left-full top-1/2 -translate-y-1/2 pl-4 py-8 z-50 pointer-events-auto"
             >
-              <div class="flex flex-col p-2 space-y-1 relative">
-                <!-- Dropdown options -->
-                <!-- Admin Read-Only Restructured Dropdown -->
-                {#if authState.isAdminView}
-                  <a
-                    href="/payouts/approvals"
-                    onclick={() => {
-                      hoverStates.payouts = false;
-                      closeMobileMenu();
-                    }}
-                    class="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-50 hover:text-[#0066cc]"
-                  >
-                    Approve Payouts
-                  </a>
-                  <a
-                    href="/payouts/redeemed"
-                    onclick={() => {
-                      hoverStates.payouts = false;
-                      closeMobileMenu();
-                    }}
-                    class="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-50 hover:text-[#0066cc]"
-                  >
-                    Redeemed Cards
-                  </a>
-                  <a
-                    href="/payouts/settled"
-                    onclick={() => {
-                      hoverStates.payouts = false;
-                      closeMobileMenu();
-                    }}
-                    class="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-50 hover:text-[#0066cc]"
-                  >
-                    Settled Payouts
-                  </a>
-                {:else}
-                  <!-- Standard Payee Dropdown -->
-                  <a
-                    href="/payouts/new"
-                    onclick={() => {
-                      hoverStates.payouts = false;
-                      closeMobileMenu();
-                    }}
-                    class="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-50 hover:text-[#0066cc]"
-                  >
-                    New Payout
-                  </a>
-                  <a
-                    href="/payouts/redeemed"
-                    onclick={() => {
-                      hoverStates.payouts = false;
-                      closeMobileMenu();
-                    }}
-                    class="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-50 hover:text-[#0066cc]"
-                  >
-                    Redeemed Cards
-                  </a>
-                  <a
-                    href="/payouts/settled"
-                    onclick={() => {
-                      hoverStates.payouts = false;
-                      closeMobileMenu();
-                    }}
-                    class="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-50 hover:text-[#0066cc]"
-                  >
-                    Settled Payouts
-                  </a>
-                  <a
-                    href="/payouts/approvals"
-                    onclick={() => {
-                      hoverStates.payouts = false;
-                      closeMobileMenu();
-                    }}
-                    class="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-50 hover:text-[#0066cc]"
-                  >
-                    Approve payouts
-                  </a>
-                {/if}
+              <div
+                class="bg-white rounded-2xl shadow-[0_10px_30px_-5px_rgba(0,0,0,0.15)] w-56 flex flex-col border border-slate-100 overflow-hidden"
+              >
+                <div class="flex flex-col p-2 space-y-1 relative">
+                  {#each item.children as child}
+                    <a
+                      href={child.path}
+                      onclick={() => {
+                        hoverStates[item.label] = false;
+                        closeMobileMenu();
+                      }}
+                      class="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 transition-colors"
+                      onmouseenter={(e) => {
+                        (e.currentTarget as HTMLElement).style.backgroundColor = currentTheme.colors.primary + '10';
+                        (e.currentTarget as HTMLElement).style.color = currentTheme.colors.primary;
+                      }}
+                      onmouseleave={(e) => {
+                        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                        (e.currentTarget as HTMLElement).style.color = '';
+                      }}
+                    >
+                      {child.label}
+                    </a>
+                  {/each}
+                </div>
               </div>
             </div>
           {/if}
-
-          <!-- Payouts Submenu Overlay removed for Payer as they now use direct click -->
         </li>
       {/each}
     </ul>
@@ -314,16 +226,16 @@
     <ul class="flex w-full flex-col items-center gap-7 pb-4">
       {#each bottomNav as item}
         {@const Icon = item.icon}
+        {@const isItemSettingsOpen = item.id === "settings" && isSettingsOpen}
+        
         <li
           class="relative flex w-full justify-center group"
           onmouseenter={() => {
-            if (item.id === "account" || item.path === "/account")
-              hoverStates.profile = true;
+            if (item.id === "account") hoverStates.profile = true;
             if (item.id === "settings") isSettingsOpen = true;
           }}
           onmouseleave={() => {
-            if (item.id === "account" || item.path === "/account")
-              hoverStates.profile = false;
+            if (item.id === "account") hoverStates.profile = false;
             if (item.id === "settings") isSettingsOpen = false;
           }}
         >
@@ -334,15 +246,14 @@
                 e.preventDefault();
               } else {
                 hoverStates.profile = false;
-                handleNavClick(e, item.path);
+                handleNavClick(e, item.path, item.id);
               }
             }}
-            class="flex flex-col items-center text-white transition-colors hover:text-slate-300 {item.path ===
-            '/logout'
+            class="flex flex-col items-center text-white transition-colors hover:text-slate-300 {item.id ===
+            'logout'
               ? 'hover:text-rose-400'
-              : ''} {item.id === 'settings' && isSettingsOpen
-              ? 'text-indigo-300'
               : ''}"
+            style="color: {isItemSettingsOpen ? currentTheme.colors.navActiveBorder : 'white'}"
           >
             <span
               class="flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
@@ -354,89 +265,94 @@
             </span>
           </a>
 
-          {#if item.id === "settings"}
-            {#if isSettingsOpen}
-              <!-- Settings Menu Popover Bridge -->
+          {#if item.id === "settings" && item.children && isSettingsOpen}
+            <!-- Settings Menu Popover Bridge -->
+            <div
+              class="absolute left-full top-1/2 -translate-y-1/2 pl-4 py-4 z-50"
+            >
               <div
-                class="absolute left-full top-1/2 -translate-y-1/2 pl-4 py-4 z-50"
+                class="bg-white rounded-2xl shadow-xl w-56 flex flex-col pointer-events-auto border border-slate-100 overflow-visible"
               >
-                <div
-                  class="bg-white rounded-2xl shadow-xl w-56 flex flex-col pointer-events-auto border border-slate-100 overflow-visible"
-                >
-                  <div class="flex flex-col p-2 space-y-1 relative">
-                    <!-- Dropdown options -->
+                <div class="flex flex-col p-2 space-y-1 relative">
+                  {#each item.children as child}
                     <a
-                      href="/settings/workflow"
+                      href={child.path}
                       onclick={() => (isSettingsOpen = false)}
-                      class="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-50 hover:text-[#0066cc]"
+                      class="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 transition-colors"
+                      onmouseenter={(e) => {
+                        (e.currentTarget as HTMLElement).style.backgroundColor = currentTheme.colors.primary + '10';
+                        (e.currentTarget as HTMLElement).style.color = currentTheme.colors.primary;
+                      }}
+                      onmouseleave={(e) => {
+                        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                        (e.currentTarget as HTMLElement).style.color = '';
+                      }}
                     >
-                      Workflow
+                      {child.label}
                       <ArrowUpRight
                         class="h-4 w-4 text-slate-900"
                         strokeWidth={2.5}
                       />
                     </a>
-                    <a
-                      href="/settings/users"
-                      onclick={() => (isSettingsOpen = false)}
-                      class="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-50 hover:text-[#0066cc]"
-                    >
-                      Users and roles
-                      <ArrowUpRight
-                        class="h-4 w-4 text-slate-900"
-                        strokeWidth={2.5}
-                      />
-                    </a>
-                  </div>
+                  {/each}
                 </div>
               </div>
-            {/if}
-          {:else if item.path === "/account" && authState.user}
-            <!-- User Tooltip -->
+            </div>
+          {:else if item.id === "account" && authState.user}
+            <!-- User Tooltip Wrapper (The "Bridge") -->
             <div
-              class="absolute left-full ml-1 top-1/2 -translate-y-1/2 transition-all duration-200 bg-slate-800 p-3 rounded-xl shadow-2xl border border-slate-700/80 w-52 z-[60] flex flex-col gap-0.5 pointer-events-auto text-left {hoverStates.profile
-                ? 'visible opacity-100 translate-x-2'
-                : 'invisible opacity-0 translate-x-0'}"
+              class="absolute left-full top-1/2 -translate-y-1/2 pl-2 py-8 z-[60] pointer-events-auto transition-all duration-200
+                {hoverStates.profile ? 'visible opacity-100 translate-x-0' : 'invisible opacity-0 -translate-x-2'}"
             >
-              <!-- Arrow -->
               <div
-                class="absolute w-2.5 h-2.5 bg-slate-800 border-l border-b border-slate-700/80 -left-[5px] top-1/2 -translate-y-1/2 rotate-45 rounded-[2px]"
-              ></div>
-
-              <div class="font-semibold text-sm text-slate-100 truncate pr-2">
-                {authState.user.name}
-              </div>
-              <div class="text-xs text-slate-400 truncate pr-2">
-                {authState.user.email}
-              </div>
-              <div
-                class="text-[10px] text-slate-500 font-mono mt-1.5 pt-1.5 border-t border-slate-700/50 truncate flex flex-col gap-1"
+                class="p-3 rounded-xl shadow-2xl border w-52 flex flex-col gap-0.5 relative"
+                style="background-color: {currentTheme.colors.sidebarBg}; border-color: {currentTheme.colors.sidebarBorder};"
               >
-                <span>ID: {authState.user.id}</span>
-                {#if authState.isAdminView}
-                  <span
-                    class="text-rose-400/80 uppercase tracking-widest font-black text-[9px] mt-0.5"
-                    >Admin Impersonating</span
-                  >
-                {/if}
-              </div>
+                <!-- Arrow -->
+                <div
+                  class="absolute w-2.5 h-2.5 border-l border-b -left-[5px] top-1/2 -translate-y-1/2 rotate-45 rounded-[2px]"
+                  style="background-color: {currentTheme.colors.sidebarBg}; border-color: {currentTheme.colors.sidebarBorder};"
+                ></div>
 
-              <!-- Role Switcher -->
-              <button
-                class="mt-2 w-full py-2 rounded-lg bg-slate-700/50 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition-colors border border-slate-600/50 cursor-pointer"
-                onclick={(e) => {
-                  e.stopPropagation();
-                  if (authState.user) {
-                    authState.user.role =
-                      authState.user.role === "payer" ? "payee" : "payer";
-                    goto(`/?role=${authState.user.role}`, {
-                      invalidateAll: true
-                    });
-                  }
-                }}
-              >
-                Switch to {authState.user.role === "payer" ? "Payee" : "Payer"}
-              </button>
+                <div class="font-semibold text-sm text-white truncate pr-2">
+                  {authState.user.name}
+                </div>
+                <div class="text-xs text-slate-400 truncate pr-2">
+                  {authState.user.email}
+                </div>
+                <div
+                  class="text-[10px] text-slate-500 font-mono mt-1.5 pt-1.5 border-t truncate flex flex-col gap-1"
+                  style="border-color: {currentTheme.colors.sidebarBorder}"
+                >
+                  <span>ID: {authState.user.id}</span>
+                  {#if authState.isAdminView}
+                    <span
+                      class="text-rose-400/80 uppercase tracking-widest font-black text-[9px] mt-0.5"
+                      >Admin Impersonating</span
+                    >
+                  {/if}
+                </div>
+
+                <!-- Role Switcher -->
+                <button
+                  class="mt-2 w-full py-2 rounded-lg text-xs font-semibold text-slate-200 transition-colors border cursor-pointer"
+                  style="background-color: {currentTheme.colors.navActiveBg}; border-color: {currentTheme.colors.sidebarBorder}"
+                  onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = currentTheme.colors.navHoverBg; }}
+                  onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = currentTheme.colors.navActiveBg; }}
+                  onclick={(e) => {
+                    e.stopPropagation();
+                    if (authState.user) {
+                      authState.user.role =
+                        authState.user.role === "payer" ? "payee" : "payer";
+                      goto(`/?role=${authState.user.role}`, {
+                        invalidateAll: true
+                      });
+                    }
+                  }}
+                >
+                  Switch to {authState.user.role === "payer" ? "Payee" : "Payer"}
+                </button>
+              </div>
             </div>
           {/if}
         </li>

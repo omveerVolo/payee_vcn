@@ -12,8 +12,19 @@
   import { Check, X } from "lucide-svelte";
 
   let isDropdownOpen = $state(false);
+  const currentTheme = $derived(authState.theme);
 
-  let userNotifications = $derived(
+  interface Notification {
+    id: string;
+    userId: string;
+    title: string;
+    message: string;
+    read: boolean;
+    type?: string;
+    programId?: string;
+  }
+
+  let userNotifications = $derived<Notification[]>(
     [
       ...dbStore.notifications.filter(
         (n: any) => n.userId === authState.user?.id
@@ -52,7 +63,7 @@
         <input
           type="text"
           placeholder="Start Typing...."
-          class="h-11 w-full rounded-2xl border-none bg-white pl-11 pr-4 text-sm text-slate-800 shadow-sm outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#7d326f]/20 transition-all"
+          class="h-11 w-full rounded-2xl border-none bg-white pl-11 pr-4 text-sm text-slate-800 shadow-sm outline-none placeholder:text-slate-400 transition-all"
         />
         <button
           class="absolute inset-y-1.5 right-1.5 flex items-center gap-1.5 rounded-xl bg-[#e8e4f4] px-4 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-[#d8d2ec] cursor-pointer"
@@ -72,7 +83,7 @@
         onclick={toggleRole}
         class="flex h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-[14px] font-medium text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 cursor-pointer"
       >
-        Switch to <span class="ml-1 font-semibold text-[#7d326f] capitalize"
+        Switch to <span class="ml-1 font-semibold capitalize" style="color: {currentTheme.colors.primary}"
           >{authState.user?.role === "payer" ? "Payee" : "Payer"}</span
         >
       </button>
@@ -107,7 +118,8 @@
             <h3 class="font-semibold text-slate-800">Notifications</h3>
             {#if userNotifications.length > 0}
               <button
-                class="text-xs font-medium text-[#7d326f] hover:underline cursor-pointer"
+                class="text-xs font-medium hover:underline cursor-pointer"
+                style="color: {currentTheme.colors.primary}"
                 >Mark all read</button
               >
             {/if}
@@ -141,7 +153,8 @@
                     <div
                       class="mt-1.5 h-2 w-2 shrink-0 rounded-full {notification.read
                         ? 'bg-slate-200'
-                        : 'bg-[#7d326f] shadow-[0_0_0_3px_rgba(125,50,111,0.1)]'}"
+                        : ''}"
+                      style="background-color: {notification.read ? '' : currentTheme.colors.primary}"
                     ></div>
                     <div class="flex-1 min-w-0">
                       <p
@@ -164,7 +177,8 @@
                         </p>
                         {#if !notification.read}
                           <span
-                            class="text-[9px] font-black text-[#7d326f] uppercase tracking-widest bg-[#7d326f]/5 px-1.5 py-0.5 rounded"
+                            class="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded"
+                            style="color: {currentTheme.colors.primary}; background-color: {currentTheme.colors.primary}10"
                             >New</span
                           >
                         {/if}
@@ -179,12 +193,15 @@
                           onclick={(e) => {
                             e.stopPropagation();
                             acceptInvitation(
-                              notification.id,
-                              notification.programId,
+                              notification.id || "",
+                              notification.programId || "",
                               authState.user?.id || ""
                             );
                           }}
-                          class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#7d326f]/5 text-[#7d326f] transition-all hover:bg-[#7d326f] hover:text-white cursor-pointer border border-[#7d326f]/10 shadow-sm"
+                          class="flex h-8 w-8 items-center justify-center rounded-lg transition-all hover:text-white cursor-pointer border shadow-sm"
+                          style="background-color: {currentTheme.colors.primary}10; color: {currentTheme.colors.primary}; border-color: {currentTheme.colors.primary}20"
+                          onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = currentTheme.colors.primary; (e.currentTarget as HTMLElement).style.color = 'white'; }}
+                          onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = currentTheme.colors.primary + '10'; (e.currentTarget as HTMLElement).style.color = currentTheme.colors.primary; }}
                           title="Accept Invitation"
                         >
                           <Check
@@ -196,8 +213,8 @@
                           onclick={(e) => {
                             e.stopPropagation();
                             rejectInvitation(
-                              notification.id,
-                              notification.programId,
+                              notification.id || "",
+                              notification.programId || "",
                               authState.user?.id || ""
                             );
                           }}

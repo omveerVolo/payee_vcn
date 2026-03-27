@@ -15,6 +15,7 @@
 
   let { payout, onClose }: { payout: any; onClose: () => void } = $props();
   import { goto } from "$app/navigation";
+  const currentTheme = $derived(authState.theme);
 
   let step = $state(1);
   let isProcessing = $state(false);
@@ -89,7 +90,8 @@
         <!-- STEP 1: NDC Approval Document (Shifted from Step 2) -->
         <div class="flex flex-col">
           <h2
-            class="text-[28px] font-semibold text-[#003366] mb-1 tracking-tight"
+            class="text-[28px] font-semibold mb-1 tracking-tight"
+            style="color: {currentTheme.colors.primary}"
           >
             NDC Approval Document
           </h2>
@@ -167,9 +169,8 @@
               bind:checked={acceptedTerms}
             />
             <div
-              class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border {acceptedTerms
-                ? 'border-[#1a7f71] bg-[#1a7f71]'
-                : 'border-slate-300 bg-white group-hover:border-[#1a7f71]'} transition-colors"
+              class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition-colors"
+              style="border-color: {acceptedTerms ? currentTheme.colors.primary : 'rgb(203 213 225)'}; background-color: {acceptedTerms ? currentTheme.colors.primary : 'white'};"
             >
               {#if acceptedTerms}
                 <svg
@@ -192,7 +193,10 @@
           </label>
 
           <button
-            class="w-full h-[52px] rounded-xl bg-[#006ee6] text-[16px] font-semibold text-white shadow-sm hover:bg-[#005bbd] transition-transform active:scale-[0.98] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            class="w-full h-[52px] rounded-xl text-[16px] font-semibold text-white shadow-sm transition-transform active:scale-[0.98] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            style="background-color: {currentTheme.colors.primary}"
+            onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(0.9)'; }}
+            onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
             onclick={handleNext}
             disabled={isProcessing || !acceptedTerms}
           >
@@ -203,7 +207,8 @@
         <!-- STEP 2: payout Gateway (Virtual Card) (Shifted from Step 3) -->
         <div class="flex flex-col items-center">
           <h2
-            class="text-[18px] font-semibold text-[#003366] w-full text-left mb-1"
+            class="text-[18px] font-semibold w-full text-left mb-1"
+            style="color: {currentTheme.colors.primary}"
           >
             payout Gateway
           </h2>
@@ -214,7 +219,8 @@
           </p>
 
           <div
-            class="w-full aspect-[1.586/1] rounded-2xl bg-gradient-to-br from-[#003366] via-[#004a99] to-[#001f4d] p-6 shadow-xl mb-6 flex flex-col justify-between text-white relative overflow-hidden"
+            class="w-full aspect-[1.586/1] rounded-2xl p-6 shadow-xl mb-6 flex flex-col justify-between text-white relative overflow-hidden"
+            style="background-color: {currentTheme.colors.primary}; background-image: linear-gradient(to bottom right, {currentTheme.colors.primary}, {currentTheme.colors.sidebarBg})"
           >
             <div
               class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10 blur-2xl"
@@ -307,17 +313,20 @@
               <span class="text-[12px] font-medium text-slate-500 mb-0.5"
                 >Payer Details</span
               >
-              <span class="text-[16px] font-bold text-[#003366]"
+              <span class="text-[16px] font-bold" style="color: {currentTheme.colors.primary}"
                 >{payout.program || "Acme Insurance"}</span
               >
             </div>
-            <div class="text-[26px] font-bold text-[#003366]">
+            <div class="text-[26px] font-bold" style="color: {currentTheme.colors.primary}">
               {"₹" + formatCurrency(payout.payableAmount)}
             </div>
           </div>
 
           <button
-            class="w-full h-11 rounded-xl bg-[#0066cc] text-[14px] font-semibold text-white shadow-sm hover:bg-[#0052a3] transition-all cursor-pointer flex items-center justify-center disabled:opacity-50"
+            class="w-full h-11 rounded-xl text-[14px] font-semibold text-white shadow-sm transition-all cursor-pointer flex items-center justify-center disabled:opacity-50"
+            style="background-color: {currentTheme.colors.primary}"
+            onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(0.9)'; }}
+            onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
             onclick={handleNext}
             disabled={isProcessing}
           >
@@ -328,7 +337,8 @@
         <!-- STEP 3: Complete payout (Add a new card modal) -->
         <div class="flex flex-col items-center">
           <h2
-            class="text-[18px] font-semibold text-[#003366] w-full text-left mb-1"
+            class="text-[18px] font-semibold w-full text-left mb-1"
+            style="color: {currentTheme.colors.primary}"
           >
             Complete payout
           </h2>
@@ -346,17 +356,18 @@
             >
               <User class="h-4 w-4" />
             </div>
-            <span class="text-[14px] font-semibold text-[#0066cc]"
+            <span class="text-[14px] font-semibold" style="color: {currentTheme.colors.secondary}"
               >Using as +91 8076******</span
             >
           </div>
 
           <div class="w-full flex flex-col gap-4 mb-4">
             <div class="flex flex-col gap-1.5 w-full">
-              <label class="text-[12px] font-medium text-slate-600"
+              <label class="text-[12px] font-medium text-slate-600" for="cardNumber"
                 >Card Number</label
               >
               <input
+                id="cardNumber"
                 type="text"
                 readonly
                 value="9553  4254  6354  1289"
@@ -366,10 +377,11 @@
 
             <div class="flex gap-4 w-full">
               <div class="flex flex-col gap-1.5 flex-1 w-full">
-                <label class="text-[12px] font-medium text-slate-600"
+                <label class="text-[12px] font-medium text-slate-600" for="expiryDate"
                   >Expiry Date</label
                 >
                 <input
+                  id="expiryDate"
                   type="text"
                   readonly
                   value="12 / 30"
@@ -377,9 +389,10 @@
                 />
               </div>
               <div class="flex flex-col gap-1.5 flex-1 w-full">
-                <label class="text-[12px] font-medium text-slate-600">CVV</label
+                <label class="text-[12px] font-medium text-slate-600" for="cvv">CVV</label
                 >
                 <input
+                  id="cvv"
                   type="text"
                   value="955"
                   class="w-full h-11 rounded-lg border border-slate-200 bg-slate-50 px-4 text-[14px] font-mono font-medium text-slate-700 focus:border-[#0066cc] focus:bg-white outline-none shadow-sm"
@@ -397,9 +410,8 @@
               bind:checked={saveCardChecked}
             />
             <div
-              class="flex h-5 w-5 shrink-0 items-center justify-center rounded border {saveCardChecked
-                ? 'border-[#0066cc] bg-[#0066cc]'
-                : 'border-slate-300 bg-white group-hover:border-[#0066cc]'} transition-colors"
+              class="flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors"
+               style="border-color: {saveCardChecked ? currentTheme.colors.secondary : 'rgb(203 213 225)'}; background-color: {saveCardChecked ? currentTheme.colors.secondary : 'white'};"
             >
               {#if saveCardChecked}
                 <svg
@@ -422,7 +434,10 @@
           </label>
 
           <button
-            class="w-full h-11 rounded-xl bg-[#0066cc] flex items-center justify-between px-6 text-[14px] font-semibold text-white shadow-sm hover:bg-[#0052a3] transition-all cursor-pointer disabled:opacity-50"
+            class="w-full h-11 rounded-xl flex items-center justify-between px-6 text-[14px] font-semibold text-white shadow-sm transition-all cursor-pointer disabled:opacity-50"
+            style="background-color: {currentTheme.colors.primary}"
+            onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(0.9)'; }}
+            onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
             onclick={handleNext}
             disabled={isProcessing}
           >
@@ -433,7 +448,7 @@
       {:else if step === 4}
         <!-- STEP 3: Complete payout (Shifted from Step 4) -->
         <div class="flex flex-col">
-          <h2 class="text-[18px] font-semibold text-[#003366] mb-1">
+          <h2 class="text-[18px] font-semibold mb-1" style="color: {currentTheme.colors.primary}">
             Complete payout
           </h2>
           <p class="text-[12px] font-medium text-slate-500 mb-6">
@@ -494,7 +509,7 @@
                 <span class="font-semibold text-slate-800 text-[14px]"
                   >Total</span
                 >
-                <span class="font-semibold text-[#0066cc] text-[18px]"
+                <span class="font-semibold text-[18px]" style="color: {currentTheme.colors.secondary}"
                   >₹{formatCurrency(payout.payableAmount)}</span
                 >
               </div>
@@ -509,7 +524,10 @@
           </div>
 
           <button
-            class="w-full h-11 rounded-xl bg-[#0066cc] flex items-center justify-between px-6 text-[14px] font-semibold text-white shadow-sm hover:bg-[#0052a3] transition-all cursor-pointer disabled:opacity-50"
+            class="w-full h-11 rounded-xl flex items-center justify-between px-6 text-[14px] font-semibold text-white shadow-sm transition-all cursor-pointer disabled:opacity-50"
+            style="background-color: {currentTheme.colors.primary}"
+            onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(0.9)'; }}
+            onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
             onclick={handleNext}
             disabled={isProcessing}
           >
@@ -526,7 +544,7 @@
       {:else if step === 5}
         <!-- STEP 4: OTP Verification (Second Last Flow - Shifted from Step 1) -->
         <div class="flex flex-col items-center">
-          <h2 class="text-[20px] font-semibold text-[#003366] mb-1">
+          <h2 class="text-[20px] font-semibold mb-1" style="color: {currentTheme.colors.primary}">
             OTP Verification
           </h2>
           <p class="text-[12px] font-medium text-slate-500 mb-8 tracking-tight">
@@ -572,12 +590,16 @@
             I didn't receive the code
           </p>
           <button
-            class="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer mb-8"
+            class="text-[11px] font-semibold hover:underline cursor-pointer mb-8"
+            style="color: {currentTheme.colors.secondary}"
             >Resend OTP</button
           >
 
           <button
-            class="w-full h-11 rounded-xl bg-[#0066cc] text-[14px] font-semibold text-white shadow-sm hover:bg-[#0052a3] transition-all cursor-pointer flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full h-11 rounded-xl text-[14px] font-semibold text-white shadow-sm transition-all cursor-pointer flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            style="background-color: {currentTheme.colors.secondary}"
+            onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(0.9)'; }}
+            onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
             onclick={handleNext}
             disabled={isProcessing || otpValues.join("").length < 6}
           >
@@ -591,7 +613,8 @@
             class="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 border-4 border-white shadow-[0_0_15px_rgba(0,102,204,0.15)] bg-gradient-to-tr from-blue-50 to-white"
           >
             <CheckCircle2
-              class="h-8 w-8 text-[#0066cc]"
+              class="h-8 w-8"
+              style="color: {currentTheme.colors.primary}"
               strokeWidth={2.5}
             />
           </div>
@@ -621,7 +644,8 @@
               >
             </div>
             <div
-              class="text-[24px] font-semibold text-[#003366] tracking-tight"
+              class="text-[24px] font-semibold tracking-tight"
+              style="color: {currentTheme.colors.primary}"
             >
               ₹{formatCurrency(payout.payableAmount)}
             </div>
@@ -646,7 +670,10 @@
 
           <!-- Final Button - Professional Blue -->
           <button
-            class="w-full h-11 rounded-xl bg-[#0066cc] flex items-center justify-between px-6 text-[14px] font-semibold text-white transition-all hover:bg-[#0052a3] cursor-pointer shadow-sm"
+            class="w-full h-11 rounded-xl flex items-center justify-between px-6 text-[14px] font-semibold text-white transition-all cursor-pointer shadow-sm"
+            style="background-color: {currentTheme.colors.secondary}"
+            onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(0.9)'; }}
+            onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
             onclick={handleReturnDashboard}
           >
             <span>₹{formatCurrency(payout.payableAmount)}</span>

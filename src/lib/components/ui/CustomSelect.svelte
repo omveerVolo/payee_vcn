@@ -1,14 +1,23 @@
 <script lang="ts">
   import { ChevronDown } from "lucide-svelte";
   import { onMount } from "svelte";
+  import { authState } from "$lib/state/auth.svelte.js";
 
-  export let id = "";
-  export let value = "";
-  export let options: string[] = [];
-  export let disabled = false;
+  let { 
+    id = "", 
+    value = $bindable(""), 
+    options = [], 
+    disabled = false 
+  }: { 
+    id?: string; 
+    value?: string; 
+    options?: string[]; 
+    disabled?: boolean 
+  } = $props();
 
-  let isOpen = false;
-  let elementRef: HTMLDivElement;
+  let isOpen = $state(false);
+  let elementRef: HTMLDivElement | undefined = $state();
+  const currentTheme = $derived(authState.theme);
 
   function toggleDropdown() {
     if (!disabled) {
@@ -48,7 +57,9 @@
   <button
     type="button"
     {disabled}
-    class="flex h-12 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 outline-none transition-all focus:border-[#7d326f] focus:ring-1 focus:ring-[#7d326f] hover:border-slate-300 disabled:opacity-50 disabled:bg-slate-50 disabled:cursor-not-allowed disabled:hover:border-slate-200"
+    class="flex h-12 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 outline-none transition-all hover:border-slate-300 disabled:opacity-50 disabled:bg-slate-50 disabled:cursor-not-allowed disabled:hover:border-slate-200"
+    onfocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = currentTheme.colors.primary; (e.currentTarget as HTMLElement).style.boxShadow = `0 0 0 1px ${currentTheme.colors.primary}`; }}
+    onblur={(e) => { (e.currentTarget as HTMLElement).style.borderColor = ''; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}
     onclick={toggleDropdown}
   >
     <span class="truncate">{value || "Select an option"}</span>
@@ -68,10 +79,8 @@
         {#each options as option}
           <button
             type="button"
-            class="flex items-center w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-slate-50
-              {value === option
-              ? 'bg-purple-50 text-[#7d326f]'
-              : 'text-slate-700'}"
+            class="flex items-center w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-slate-50"
+            style="color: {value === option ? currentTheme.colors.primary : 'rgb(51 65 85)'}; background-color: {value === option ? currentTheme.colors.primary + '10' : 'transparent'}"
             onclick={() => selectOption(option)}
           >
             {option}

@@ -4,6 +4,7 @@
   import { authState } from "$lib/state/auth.svelte.js";
 
   let { payouts = [], isPayee = false, onredeem = () => {} } = $props();
+  const currentTheme = $derived(authState.theme);
 
   const isToday = (value: any) => {
     if (!value) return false;
@@ -24,7 +25,7 @@
   <div
     class="border-b border-slate-200 bg-[#f8f9fa] px-6 py-4 flex items-center justify-between"
   >
-    <h2 class="text-[15px] font-semibold text-[#003366]">Recent Payouts</h2>
+    <h2 class="text-[15px] font-semibold text-slate-800">Recent Payouts</h2>
   </div>
 
   <div class="flex flex-col divide-y divide-slate-100">
@@ -45,7 +46,7 @@
           ></div>
 
           <div class="flex flex-col gap-0.5">
-            <span class="text-[14px] font-semibold text-[#7d326f]"
+            <span class="text-[14px] font-semibold text-slate-800"
               >{payout.name || payout.provider}</span
             >
             <div
@@ -78,7 +79,10 @@
           {#if isPayee}
             {#if (payout.status === "Ready to redeem" || payout.status === "Ready to Redeem") && (authState.user?.role === "payee" || authState.user?.role === "admin")}
               <button
-                class="bg-[#0066cc] hover:bg-[#0052a3] text-white w-full py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer flex items-center justify-center gap-1.5 border border-transparent"
+                class="text-white w-full py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer flex items-center justify-center gap-1.5 border border-transparent"
+                style="background-color: {currentTheme.colors.secondary}"
+                onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(0.9)'; }}
+                onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
                 onclick={() => onredeem(payout)}
               >
                 <Download class="h-3.5 w-3.5" />
@@ -95,7 +99,12 @@
               </button>
             {:else}
               <div
-                class="bg-[#e8f8f5] text-[#1a7f71] w-full py-1.5 rounded-md text-[13px] font-semibold flex items-center justify-center gap-1.5 cursor-default border border-[#8cdccb]"
+                class="w-full py-1.5 rounded-md text-[13px] font-semibold flex items-center justify-center gap-1.5 cursor-default border"
+                style="
+                  background-color: {currentTheme.colors.statusSuccessBg};
+                  color: {currentTheme.colors.statusSuccessText};
+                  border-color: {currentTheme.colors.statusSuccessBorder};
+                "
               >
                 <CheckCircle2 class="h-4 w-4 stroke-[2.5]" />
                 {payout.status || "Redeemed"}

@@ -16,6 +16,8 @@
   let activeUser = $derived(
     authState.isAdminView ? authState.viewingAs : authState.user
   );
+  
+  const currentTheme = $derived(authState.theme);
 
   let selectedPayoutIds = $state<string[]>([]);
   let selectedPayout = $state<any>(null);
@@ -328,22 +330,21 @@
               </div>
 
               <div class="col-span-1 flex items-center text-left">
-                {#if isInternalAdmin}
-                  <div
-                    class="bg-blue-50 text-blue-600 px-2.5 py-1 rounded-md text-[11px] font-semibold tracking-wide flex items-center justify-center gap-1 border border-blue-200"
-                  >
-                    <Clock class="h-3 w-3 stroke-[2.5]" />
-                    {payout.status}
-                  </div>
-                {:else}
-                  <span
-                    class="text-[12px] font-medium {payout.status === 'Approved'
-                      ? 'text-green-600'
-                      : 'text-[#f48a60]'} whitespace-nowrap transition-colors"
-                  >
-                    {payout.status}
-                  </span>
-                {/if}
+                <div
+                  class="px-2.5 py-1 rounded-md text-[11px] font-semibold tracking-wide flex items-center justify-center gap-1.5 border transition-all duration-300"
+                  style="
+                    background-color: {payout.status === 'Pending' ? currentTheme.colors.statusPendingBg : currentTheme.colors.statusSuccessBg};
+                    color: {payout.status === 'Pending' ? currentTheme.colors.statusPendingText : currentTheme.colors.statusSuccessText};
+                    border-color: {payout.status === 'Pending' ? currentTheme.colors.statusPendingBorder : currentTheme.colors.statusSuccessBorder};
+                  "
+                >
+                  {#if payout.status === 'Pending'}
+                    <Clock class="h-3.5 w-3.5 stroke-[2.5]" />
+                  {:else}
+                    <CheckCircle2 class="h-3.5 w-3.5 stroke-[2.5]" />
+                  {/if}
+                  {payout.status}
+                </div>
               </div>
 
               <div
@@ -487,30 +488,32 @@
       </div>
     {/if}
 
-    <!-- Floating Action Button (Only for Payer) -->
-    {#if !isInternalAdmin}
+    <!-- Floating Action Bar (Only for Payer with selection) -->
+    {#if !isInternalAdmin && selectedPayoutIds.length > 0}
       <div
-        class="fixed bottom-0 left-0 md:left-28 right-0 flex items-center justify-center border-t border-slate-200 bg-white/95 backdrop-blur-md shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.1)] z-40 p-6"
+        class="fixed bottom-0 left-0 md:left-28 right-0 flex items-center justify-center border-t border-slate-100 bg-white/80 backdrop-blur-lg shadow-[0_-15px_30px_-5px_rgba(0,0,0,0.05)] z-40 py-4 px-8 animate-in slide-in-from-bottom duration-300"
       >
         <div class="flex items-center justify-between w-full max-w-[1400px]">
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
             <div
-              class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-700 font-bold text-sm"
+              class="flex h-9 w-9 items-center justify-center rounded-full font-bold text-sm shadow-inner"
+              style="background-color: {currentTheme.colors.statusSuccessBg}; color: {currentTheme.colors.statusSuccessText};"
             >
               {selectedPayoutIds.length}
             </div>
-            <span class="text-sm font-semibold text-slate-700"
-              >Selected Payouts to Approve</span
-            >
+            <div class="flex flex-col">
+              <span class="text-sm font-bold text-slate-800 leading-tight"
+                >Selected Payouts</span
+              >
+              <span class="text-[11px] text-slate-500 font-medium">Ready to approve for payment</span>
+            </div>
           </div>
           <button
             onclick={handleApprove}
-            disabled={selectedPayoutIds.length === 0}
-            class="bg-[#6e56cf] hover:bg-[#5a46aa] text-white px-12 py-3.5 rounded-xl text-[14px] font-bold border-none shadow-md shadow-indigo-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
+            class="hover:opacity-90 text-white px-10 py-2.5 rounded-xl text-[14px] font-bold border-none shadow-lg transition-all cursor-pointer hover:-translate-y-0.5 active:translate-y-0"
+            style="background-color: {currentTheme.colors.primary};"
           >
-            Approve {selectedPayoutIds.length > 0
-              ? selectedPayoutIds.length
-              : ""} Payouts
+            Approve {selectedPayoutIds.length} Payouts
           </button>
         </div>
       </div>

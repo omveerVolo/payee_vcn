@@ -1,5 +1,6 @@
 <script lang="ts">
   import { authState } from "$lib/state/auth.svelte.js";
+  const currentTheme = $derived(authState.theme);
 
   let activeUser = $derived(
     authState.isAdminView ? authState.viewingAs : authState.user
@@ -54,9 +55,8 @@
         bind:checked={accepted}
       />
       <div
-        class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] border {accepted
-          ? 'border-[#5b4897] bg-[#5b4897]'
-          : 'border-slate-300 bg-white group-hover:border-[#5b4897]'} transition-colors shadow-sm"
+        class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] border transition-colors shadow-sm"
+        style="border-color: {accepted ? currentTheme.colors.primary : 'rgb(203 213 225)'}; background-color: {accepted ? currentTheme.colors.primary : 'white'}"
       >
         {#if accepted}
           <svg
@@ -80,7 +80,10 @@
     </label>
 
     <button
-      class="w-full rounded-xl bg-[#5b4897] h-[52px] text-[15px] font-semibold text-white shadow-sm hover:bg-[#433177] transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+      class="w-full rounded-xl h-[52px] text-[15px] font-semibold text-white shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+      style="background-color: {currentTheme.colors.primary}"
+      onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(0.9)'; }}
+      onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
       onclick={handleAccept}
       disabled={!accepted}
     >

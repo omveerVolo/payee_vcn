@@ -14,7 +14,37 @@
     syncRemoteData
   } from "$lib/state/db.svelte.js";
 
+  interface Payout {
+    id: string;
+    payoutId: string;
+    transactionId?: string;
+    trackingId?: string;
+    claimNo?: string;
+    userId: string;
+    programId: string;
+    amount: number | string;
+    status: string;
+    date: string;
+    createdAt?: string;
+    providerName?: string;
+    businessName?: string;
+    payerName?: string;
+    tds?: string | number;
+    createdBy?: string;
+    payerId?: string | number;
+  }
+
+  interface Program {
+    id: string;
+    name: string;
+    payerId: string;
+    enrolledPayees: string[];
+    createdBy?: string;
+    payerName?: string;
+  }
+
   const dispatch = createEventDispatcher();
+  const currentTheme = $derived(authState.theme);
 
   let programFilter = $state("All Program");
   let timeFilter = $state("All Time");
@@ -59,10 +89,10 @@
   // Combine active user's accessible programs for the filter
   let accessiblePrograms = $derived(
     activeUser?.role === "payer"
-      ? dbStore.programs.filter((p: any) => isOwnedByActivePayer(p))
+      ? (dbStore.programs as Program[]).filter((p) => isOwnedByActivePayer(p))
       : activeUser?.role === "admin" && !authState.isAdminView
-        ? dbStore.programs
-        : dbStore.programs.filter((p: any) =>
+        ? (dbStore.programs as Program[])
+        : (dbStore.programs as Program[]).filter((p) =>
             p.enrolledPayees.includes(activeUser?.id || "")
           )
   );
@@ -74,12 +104,12 @@
 
   // Map Recent Payouts globally from the Mock DB to track Redemption Mutability instantly across the Dashboard view
   let mappedPayouts = $derived(
-    [...dbStore.payouts].sort((a: any, b: any) => {
+    [...(dbStore.payouts as Payout[])].sort((a, b) => {
       const db = new Date(b.createdAt || b.date).getTime();
       const da = new Date(a.createdAt || a.date).getTime();
       return db - da;
     })
-      .filter((p: any) => {
+      .filter((p) => {
         const authMatch =
           activeUser?.role === "admin" && !authState.isAdminView
             ? true
@@ -101,8 +131,8 @@
         let programMatch = true;
         if (programFilter !== "All Program") {
           // Find the program ID for the selected name
-          const selectedProg = dbStore.programs.find(
-            (prog: any) => prog.name === programFilter
+          const selectedProg = (dbStore.programs as Program[]).find(
+            (prog) => prog.name === programFilter
           );
           if (selectedProg) {
             programMatch = p.programId === selectedProg.id;
@@ -111,13 +141,13 @@
 
         return statusMatch && programMatch;
       })
-      .map((p: any) => {
+      .map((p) => {
         // Find the payer name from the program
-        const program = dbStore.programs.find(
-          (prog: any) => prog.id === p.programId
+        const program = (dbStore.programs as Program[]).find(
+          (prog) => prog.id === p.programId
         );
-        const payerUser = dbStore.users.find(
-          (u: any) => u.id === program?.payerId
+        const payerUser = (dbStore.users as any[]).find(
+          (u) => u.id === program?.payerId
         );
         const payerName = payerUser
           ? payerUser.businessName || payerUser.name
@@ -127,7 +157,7 @@
             "Unknown Payer";
 
         return {
-          dbId: p.id,
+          dbId: (p as any).id,
           payoutId: p.payoutId,
           id: p.transactionId || p.trackingId || p.claimNo,
           name:
@@ -157,17 +187,17 @@
   );
 
   let dynamicMetrics = $derived({
-    totalPayout: dbStore.payouts.reduce((sum: number, p: any) => {
+    totalPayout: (dbStore.payouts as Payout[]).reduce((sum, p) => {
       const isRedeemed = p.status === "Redeemed";
       const programMatch =
         programFilter === "All Program"
           ? true
           : p.programId ===
-            dbStore.programs.find((pr: any) => pr.name === programFilter)?.id;
+            (dbStore.programs as Program[]).find((pr) => pr.name === programFilter)?.id;
       const isAuthorized =
         activeUser?.role === "payer"
-          ? filteredAccessiblePrograms.some(
-              (prog: any) => prog.id === p.programId
+          ? (filteredAccessiblePrograms as Program[]).some(
+              (prog) => prog.id === p.programId
             )
           : activeUser?.role === "admin" && !authState.isAdminView
             ? true
@@ -176,7 +206,8 @@
       if (isRedeemed && isAuthorized && programMatch) {
         const cleanAmt = String(p.amount || "0").replace(/[₹,\s]/g, "");
         const baseAmt = parseFloat(cleanAmt) || 0;
-        const tdsNum = parseFloat(p.tds) || 0;
+        const tdsVal = (p as any).tds;
+        const tdsNum = typeof tdsVal === 'number' ? tdsVal : parseFloat(String(tdsVal || "0")) || 0;
         const finalPayable = baseAmt - (baseAmt * tdsNum) / 100;
         return sum + finalPayable;
       }
@@ -188,17 +219,17 @@
             filteredAccessiblePrograms.flatMap((p: any) => p.enrolledPayees)
           ).size || 0
         : 3,
-    totalCardsRedeemed: dbStore.payouts.filter((p: any) => {
+    totalCardsRedeemed: (dbStore.payouts as Payout[]).filter((p) => {
       const isRedeemed = p.status === "Redeemed";
       const programMatch =
         programFilter === "All Program"
           ? true
           : p.programId ===
-            dbStore.programs.find((pr: any) => pr.name === programFilter)?.id;
+            (dbStore.programs as Program[]).find((pr) => pr.name === programFilter)?.id;
       const isAuthorized =
         activeUser?.role === "payer"
-          ? filteredAccessiblePrograms.some(
-              (prog: any) => prog.id === p.programId
+          ? (filteredAccessiblePrograms as Program[]).some(
+              (prog) => prog.id === p.programId
             )
           : activeUser?.role === "admin" && !authState.isAdminView
             ? true
@@ -209,13 +240,13 @@
   });
 
   let payeeMetrics = $derived({
-    totalPayout: dbStore.payouts.reduce((sum: number, p: any) => {
+    totalPayout: (dbStore.payouts as Payout[]).reduce((sum, p) => {
       const isRedeemed = p.status === "Redeemed";
       const programMatch =
         programFilter === "All Program"
           ? true
           : p.programId ===
-            dbStore.programs.find((pr: any) => pr.name === programFilter)?.id;
+            (dbStore.programs as Program[]).find((pr) => pr.name === programFilter)?.id;
       const isAuthorized =
         (activeUser?.role === "admin" && !authState.isAdminView) ||
         p.userId === activeUser?.id;
@@ -223,30 +254,31 @@
       if (isRedeemed && isAuthorized && programMatch) {
         const cleanAmt = String(p.amount || "0").replace(/[₹,\s]/g, "");
         const baseAmt = parseFloat(cleanAmt) || 0;
-        const tdsNum = parseFloat(p.tds) || 0;
+        const tdsVal = (p as any).tds;
+        const tdsNum = typeof tdsVal === 'number' ? tdsVal : parseFloat(String(tdsVal || "0")) || 0;
         const finalPayable = baseAmt - (baseAmt * tdsNum) / 100;
         return sum + finalPayable;
       }
       return sum;
     }, 0),
     // Only payee needs to total pending and settled explicitly like this here
-    newPayouts: dbStore.payouts.filter(
-      (p: any) =>
+    newPayouts: (dbStore.payouts as Payout[]).filter(
+      (p) =>
         ((activeUser?.role === "admin" && !authState.isAdminView) ||
           p.userId === activeUser?.id) &&
         p.status === "Ready to redeem" &&
         (programFilter === "All Program" ||
           p.programId ===
-            dbStore.programs.find((pr: any) => pr.name === programFilter)?.id)
+            (dbStore.programs as Program[]).find((pr) => pr.name === programFilter)?.id)
     ).length,
-    settledPayouts: dbStore.payouts.filter(
-      (p: any) =>
+    settledPayouts: (dbStore.payouts as Payout[]).filter(
+      (p) =>
         ((activeUser?.role === "admin" && !authState.isAdminView) ||
           p.userId === activeUser?.id) &&
         p.status === "Settled" &&
         (programFilter === "All Program" ||
           p.programId ===
-            dbStore.programs.find((pr: any) => pr.name === programFilter)?.id)
+            (dbStore.programs as Program[]).find((pr) => pr.name === programFilter)?.id)
     ).length,
     activePrograms: filteredAccessiblePrograms.length
   });
@@ -275,10 +307,13 @@
     const endPrev = new Date(startCurrent);
     endPrev.setDate(endPrev.getDate() - 1);
 
-    const relevant = dbStore.payouts.filter(
-      (p: any) =>
-        (activeUser?.role === "admin" && !authState.isAdminView) ||
-        p.userId === activeUser?.id
+    const relevant = (dbStore.payouts as Payout[]).filter(
+      (p) =>
+        ((activeUser?.role === "admin" && !authState.isAdminView) ||
+          p.userId === activeUser?.id) &&
+        (programFilter === "All Program" ||
+          p.programId ===
+            (dbStore.programs as Program[]).find((pr) => pr.name === programFilter)?.id)
     );
 
     let currentTotal = 0;
@@ -290,12 +325,13 @@
     const currentPayers = new Set<string>();
     const prevPayers = new Set<string>();
 
-    relevant.forEach((p: any) => {
+    relevant.forEach((p) => {
       const d = parseDate(p.date);
       if (!d) return;
-      const amt = parseInt(String(p.amount).replace(/[^0-9]/g, "")) || 0;
-      const program = dbStore.programs.find(
-        (prog: any) => prog.id === p.programId
+      const cleanAmt = String(p.amount || "0").replace(/[₹,\s]/g, "");
+      const amt = parseInt(cleanAmt) || 0;
+      const program = (dbStore.programs as Program[]).find(
+        (prog) => prog.id === p.programId
       );
       const payerId = String(p.payerId || program?.payerId || "");
 
@@ -329,22 +365,24 @@
     const payerTotals: Record<string, number> = {};
     let totalAll = 0;
 
-    dbStore.payouts.forEach((p: any) => {
+    (dbStore.payouts as Payout[]).forEach((p) => {
       if (
         (activeUser?.role === "admin" && !authState.isAdminView) ||
         p.userId === activeUser?.id
       ) {
         if (p.status !== "Redeemed" && p.status !== "Settled") return;
 
-        const program = dbStore.programs.find(
-          (prog: any) => prog.id === p.programId
+        const program = (dbStore.programs as Program[]).find(
+          (prog) => prog.id === p.programId
         );
         const payerLabel =
           p.payerName ||
           program?.createdBy ||
           program?.payerName ||
-          p.providerName;
-        const amt = parseInt(String(p.amount).replace(/[^0-9]/g, "")) || 0;
+          p.providerName ||
+          "Unknown Payer";
+        const cleanAmt = String(p.amount || "0").replace(/[₹,\s]/g, "");
+        const amt = parseInt(cleanAmt) || 0;
         payerTotals[payerLabel] = (payerTotals[payerLabel] || 0) + amt;
         totalAll += amt;
       }
@@ -376,7 +414,8 @@
   {#if isLoading}
     <div class="flex w-full flex-1 flex-col items-center justify-center p-20">
       <div
-        class="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-[#7d326f]"
+        class="h-10 w-10 animate-spin rounded-full border-4 border-slate-200"
+        style="border-top-color: {currentTheme.colors.primary}"
       ></div>
     </div>
   {:else}
@@ -386,7 +425,7 @@
         class="w-full max-w-[1400px] bg-white rounded-[32px] p-8 md:p-10 shadow-sm border border-slate-200 flex flex-col"
       >
         <div class="mb-8">
-          <h1 class="text-[22px] font-semibold text-[#3b2b73] tracking-tight">
+          <h1 class="text-[22px] font-semibold tracking-tight" style="color: {currentTheme.colors.primary}">
             Welcome back!
           </h1>
           <p class="mt-1 text-[13px] font-medium text-slate-500">
@@ -548,7 +587,7 @@
                 <div
                   class="border-b border-slate-200 bg-[#f8f9fa] px-6 py-4 flex items-center justify-between"
                 >
-                  <h2 class="text-[15px] font-semibold text-[#003366]">
+                  <h2 class="text-[15px] font-semibold" style="color: {currentTheme.colors.primary}">
                     Top Payers
                   </h2>
                 </div>
@@ -568,8 +607,8 @@
                           class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden"
                         >
                           <div
-                            class="h-full bg-[#1a7f71] rounded-full"
-                            style="width: {payer.pct}%"
+                            class="h-full rounded-full"
+                            style="width: {payer.pct}%; background-color: {currentTheme.colors.primary}"
                           ></div>
                         </div>
                       </div>

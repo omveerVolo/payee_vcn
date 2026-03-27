@@ -1,3 +1,5 @@
+import { THEMES, getThemeByRole } from "$lib/constants/theme";
+
 const browser = typeof window !== "undefined";
 
 function loadAuth() {
@@ -26,7 +28,22 @@ function loadAuth() {
   };
 }
 
-export const authState = $state(loadAuth());
+const auth = $state(loadAuth());
+
+export const authState = {
+  get isLoggedIn() { return auth.isLoggedIn; },
+  set isLoggedIn(v) { auth.isLoggedIn = v; },
+  get user() { return auth.user; },
+  set user(v) { auth.user = v; },
+  get viewingAs() { return auth.viewingAs; },
+  set viewingAs(v) { auth.viewingAs = v; },
+  get isAdminView() { return auth.isAdminView; },
+  set isAdminView(v) { auth.isAdminView = v; },
+  get theme() {
+    const role = this.isAdminView ? this.viewingAs?.role : this.user?.role;
+    return getThemeByRole(role);
+  }
+};
 
 /**
  * @param {Partial<{id: string, name: string, email: string, role: string, hasData: boolean}> | any} [userOverrides]
